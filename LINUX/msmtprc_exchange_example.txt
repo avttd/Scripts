@@ -1,0 +1,14 @@
+account default
+# logfile /var/www/rzdba.ru/msmtp.log
+host EXCHANGE_DOMAIN
+port 587
+from SENDER_MAILBOX
+# aliases /etc/aliases
+keepbcc off
+auth on
+user SENDER_MAILBOX
+password PASSWORD!!!
+tls on
+tls_starttls on
+tls_certcheck off
+#tls_trust_file /etc/ssl/certs/ca-certificates.crt
