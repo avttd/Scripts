@@ -4,8 +4,8 @@ Param (
 [string] $userLogin
 )
 
-$ouDN = "OU=USERS FIRED,DC=COMPANY,DC=local"
-$firedCN = "CN=Fired_users,OU=USERS FIRED,DC=COMPANY,DC=local"
+$ouDN = "OU=USERS FIRED,OU=RZDBA.RU,DC=rzdba,DC=local"
+$firedCN = "CN=Fired_users,OU=USERS FIRED,OU=RZDBA.RU,DC=rzdba,DC=local"
 
 # Получаем RID для группы Fired_users
 $groupRID = Get-ADGroup -Identity Fired_users -Property primaryGroupToken | Select-Object -ExpandProperty primaryGroupToken
@@ -16,12 +16,12 @@ Set-Mailbox -Identity $userLogin -type shared
 # 2 Переименовываем учетку
 #$user = (Get-ADUser -Identity $userLogin -Properties DisplayName).DisplayName
 $user = (Get-ADUser -Identity $userLogin -Properties DisplayName).Name
-$newDisplayName = "Archive-" + $user
+$newDisplayName = "Архив-" + $user
 Set-ADUser -Identity $userLogin -DisplayName $newDisplayName
 
 # 3 Переносим учетку в OU USERS FIRED
 $userDN = (Get-ADUser -Identity $userLogin -Properties DisplayName).DistinguishedName
-Move-ADObject -Identity $userDN -TargetPath "OU=USERS FIRED,DC=COMPANY,DC=local"
+Move-ADObject -Identity $userDN -TargetPath "OU=USERS FIRED,OU=RZDBA.RU,DC=rzdba,DC=local"
 
 # 4 Добавляем пользователя в группу Fired_users
 Add-ADGroupMember -Identity "Fired_users" -Members $userLogin
@@ -36,3 +36,6 @@ $groups = $user.MemberOf | Where-Object { $_ -ne $firedCN }
 foreach ($group in $groups) {
         Remove-ADGroupMember -Identity $group -Members $userLogin -Confirm:$false
 }
+
+Set-Mailbox -Identity $userLogin -HiddenFromAddressListsEnabled $true
+Set-CASMailbox -Identity $userLogin -OWAEnabled $false
